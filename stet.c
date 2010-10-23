@@ -4,8 +4,8 @@
  Author      : Antti Tupamäki
  Version     :0.0
  Copyright   : Your copyright notice
- Description : Salaiset viestit, anna parametrit järjestyksessä, kuva ,enkoodaus,
- vai dekoodaus,viesti.
+ Description : Salaiset viestit, anna parametrit järjestyksessä, kuva ,enkoodaus
+ vai dekoodaus ja viesti.
  ============================================================================
  */
 
@@ -24,7 +24,6 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	
 	if(test_parameter(argv[2]))
 	{
 		printf("wrong parameter");
@@ -36,9 +35,7 @@ int main(int argc, char **argv)
 		if((fileHandler=fopen(argv[1],"r"))!=NULL)
 		{	
 			collect_message(argc,argv);
-			
 			read_file(fileHandler);
-			
 		}
 		else
 		{
@@ -50,8 +47,6 @@ int main(int argc, char **argv)
 		printf("ei toimi");
 		return EXIT_FAILURE;
 	}
-
-
 
 	printf("it works");
 	return EXIT_SUCCESS;
@@ -88,7 +83,6 @@ int read_file(FILE *input)
 		if(test_message(secretMessage,size))
 		{
 			printf("toimii");
-			//encode filun kutsu tähän
 			return 1;
 		}
 	}
@@ -96,7 +90,6 @@ int read_file(FILE *input)
 	{	
 		return 1;
 	}
-
 
 	printf("it works1");
 	fclose(input);
@@ -112,7 +105,6 @@ long how_long_file(FILE *fileHandle)
 
 int test_parameter(char *parameter)
 {
-
 	printf("%s", parameter);
 	if(strcmp(parameter,"encode")==0)
 	{
