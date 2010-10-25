@@ -8,10 +8,6 @@
  vai dekoodaus ja viesti.
  ============================================================================
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "stet.h"
 
 int main(int argc, char **argv)
@@ -76,14 +72,17 @@ int read_file(FILE *input)
 	
 	long size = how_long_file(copy);
 	
-	printf("how long file %ld ",size);
+	printf("how long file %ld \n ",size);
 
 	if(strcmp(encodeOrDecode,"encode")==0)
 	{
 		if(test_message(secretMessage,size))
 		{
-			printf("toimii");
-			return 1;
+			if(encode(input,secretMessage))
+			{
+				printf("we encoded message in picture\n");
+				return 1;
+			}
 		}
 	}
 	else

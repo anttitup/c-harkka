@@ -1,40 +1,40 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include<string.h>
+#include "encoding.h"
 
-
-void Hop_over_header(FILE *encodeThisFile)
+void hop_over_header(FILE *encFile)
 {
-	int headerLength = 0;
+	int *headerLength = 0;
 	
-	fseek(encodeThisFile,0xA,SEEK_SET);
-	fread(headerLength,4,1,encodeThisFile);
-	fseek(encodeThisFile,&headerLength, SEEK_SET);
+	fseek(encFile,0xA,SEEK_SET);
+	fread(headerLength,4,1,encFile);
+	fseek(encFile,&headerLength, SEEK_SET);
 }
 
-int  encode(FILE encodeThisFile,char *message)
+int  encode(FILE *encFile,char *message)
 {
 	int i,j;
-	int * bin;
-	unsigned char bit;
+	int * binaryForm;
+	unsigned int bit[1];
+	
+	hop_over_header(encFile);	
 
 	for(i=0;i<sizeof(message);i++)
 	{
-		bin =(int*)convert_binary(message[i]);
+		binaryForm = (int*)convert_binary(message[i]);
 		
-		for(j=0;j<sizeof(bin);j++)
-		{
-			if(fwrite(bin[i],1,8,encodeThisFile)!=8)
+		for(j=0;j<sizeof(binaryForm);j++)
+		{	
+			bit[0]=binaryForm[i];
+			if(fwrite(bit[0],1,8,encFile)!=8)
 				return 0;
 		}
 	}
-	return 0;
+	return 1;
 }
 
-char *convert_binary(char i;)
+int *convert_binary(char j)
 {
 	int *bin;
-	int n = (int)i;
+	int n = (int)j;
 	int i=0;
 
 	if((bin=(int*)malloc(8*sizeof(int)))==NULL)
@@ -43,7 +43,7 @@ char *convert_binary(char i;)
 	}
 	
 	
-	for(i;n!=0;i++)
+	for(i=0;n!=0;i++)
 	{
     		bin[i]=n%2;
     		n=n/2;
@@ -53,12 +53,3 @@ char *convert_binary(char i;)
 
 }
 
-int convert_decimal(int *bin)
-{
-   	int i,integer=0 ;
-	for(i=sizeof(bin);i>sizeof(bin);i--)
-   	{
-		integer=integer + bin[i]*(int)pow(2,bin[i]);
-	}
-	return integer;
-}
