@@ -2,53 +2,65 @@
 
 void hop_over_header(FILE *encFile)
 {
-	int *headerLength = 0;
+	int headerLength = 0;
 	
 	fseek(encFile,0xA,SEEK_SET);
-	fread(headerLength,4,1,encFile);
-	fseek(encFile,&headerLength, SEEK_SET);
+	fread(&headerLength,4,1,encFile);
+	fseek(encFile,headerLength, SEEK_SET);
 }
 
 int  encode(FILE *encFile,char *message)
 {
 	int i,j;
-	int * binaryForm;
-	unsigned int bit[1];
+	char * binaryForm;
+	char const mask = 1<<7; 
 	
+	unsigned char bits[1];	
 	hop_over_header(encFile);	
+	printf("message: %s \n",message);
 
-	for(i=0;i<sizeof(message);i++)
+	for(i=0;i<strlen(message);i++)
 	{
-		binaryForm = (int*)convert_binary(message[i]);
+		binaryForm = convert_binary(message[i]);
 		
-		for(j=0;j<sizeof(binaryForm);j++)
+		for(j=0;j<8;j++)
 		{	
-			bit[0]=binaryForm[i];
-			if(fwrite(bit[0],1,8,encFile)!=8)
-				return 0;
+			printf("mask:%d \n",mask);
+			fread(bits,1,8,encFile);
+			printf("%d",bits[0]);
+			if((int)binaryForm[j])
+				bits[0] =bits[0] | mask;
+			else
+				bits[0] = bits[0] & ~mask;
+
+			printf("%d",bits[0]);
+			fwrite(bits,1,8,encFile);
 		}
+		free(binaryForm);
+		
 	}
 	return 1;
 }
 
-int *convert_binary(char j)
+char *convert_binary(char j)
 {
-	int *bin;
+	char *bin;
 	int n = (int)j;
 	int i=0;
+	printf("\nn is %d\n",n);
 
-	if((bin=(int*)malloc(8*sizeof(int)))==NULL)
+	if((bin=(char*)malloc(8*sizeof(char)))==NULL)
 	{
 		exit(EXIT_FAILURE);
 	}
 	
-	
-	for(i=0;n!=0;i++)
-	{
-    		bin[i]=n%2;
-    		n=n/2;
-	}
-
+   for( i = 7; i >= 0; i--)        
+   {
+        if( (1 << i) & n)
+           bin[7 - i] = '1';
+        else
+           bin[7 - i] = '0';                   
+   }
 	return bin;
 
 }

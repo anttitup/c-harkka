@@ -13,6 +13,7 @@
 int main(int argc, char **argv)
 {
 	FILE *fileHandler;
+	char * secretMessage;
 
 	if(argc<3)
 	{
@@ -26,21 +27,14 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	if(test_file(argv[0]))
+	if((fileHandler=fopen(argv[1],"r"))!=NULL)
 	{	
-		if((fileHandler=fopen(argv[1],"r"))!=NULL)
-		{	
-			collect_message(argc,argv);
-			read_file(fileHandler);
-		}
-		else
-		{
-			printf("ei toimi");
-		}
+		secretMessage = collect_message(argc,argv);
+		read_file(fileHandler, secretMessage);
 	}
-	else
+	else 
 	{
-		printf("ei toimi");
+		printf("wrong message");
 		return EXIT_FAILURE;
 	}
 
@@ -48,49 +42,26 @@ int main(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
-int test_file(char *fileName)
+int read_file(FILE *input, char * secretMessage)
 {
-
-	if(strlen(fileName)<4)
-	{
-		printf("cannot open wrong fileName");
-	    return 0;
-	}
-
-	if(strstr(fileName,".bmi")>0)
-	{
-			printf("cannot open");
-			return 0;
-	}
-
-	return 1;
-}
-
-int read_file(FILE *input)
-{
-	FILE *copy = input;
+	char *message;
 	
-	long size = how_long_file(copy);
-	
-	printf("how long file %ld \n ",size);
-
 	if(strcmp(encodeOrDecode,"encode")==0)
 	{
-		if(test_message(secretMessage,size))
+		printf("message here is:%s \n",secretMessage);
+
+		if(encode(input,secretMessage))
 		{
-			if(encode(input,secretMessage))
-			{
 				printf("we encoded message in picture\n");
 				return 1;
-			}
 		}
 	}
 	else
 	{	
-		return 1;
+		printf("message was\n");
+		printf("%s\n",decode(input));	
 	}
 
-	printf("it works1");
 	fclose(input);
 
 	return 1;
@@ -104,20 +75,19 @@ long how_long_file(FILE *fileHandle)
 
 int test_parameter(char *parameter)
 {
-	printf("%s", parameter);
 	if(strcmp(parameter,"encode")==0)
 	{
 		encodeOrDecode = "encode";
 		return 0;
 	}
 
-	if(strcmp(parameter,"decode")==0)
+	else if(strcmp(parameter,"decode")==0)
 	{
 		encodeOrDecode = "decode";
 		return 0;
 	}
-
-	return 1;
+	else
+		return 1;
 }
 
 int test_message(char *message,long fileLength)
@@ -134,22 +104,22 @@ int test_message(char *message,long fileLength)
 	return 1;
 }
 
-void collect_message(int numberOfArguments,char *message[])
+char * collect_message(int numberOfArguments,char *message[])
 {
-	int lengthOfMessage= numberOfArguments- 2;
+	int lengthOfMessage= numberOfArguments;
 	int i;
-
-	if((secretMessage= malloc(100*sizeof(char)))==NULL)
+	char * secretMessage;
+	if((secretMessage= malloc(sizeof(message)))==NULL)
 	{
 		printf("cannot locate memero");
 		exit(EXIT_FAILURE);
 	}
-	for(i=2;i<lengthOfMessage;++i)
+	
+	for(i=3;i<lengthOfMessage;++i)
 	{
-		strcpy(secretMessage,"");
-		strcpy(secretMessage,message[i]);
+		strcat(secretMessage,message[i]);
+		strcat(secretMessage," ");
 	}
-
-	strcpy(secretMessage,"\0");
-
+	
+	return secretMessage;
 }
