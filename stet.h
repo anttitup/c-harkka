@@ -24,7 +24,7 @@ int test_message(char *message,long fileSize);
 
 char * collect_message(int numberOfArguments,char *message[]);
 
-
+void hop_over_head(FILE *encFile);
 
 
 

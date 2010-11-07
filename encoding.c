@@ -1,55 +1,102 @@
 #include "encoding.h"
 
-void hop_over_header(FILE *encFile)
-{
-	int headerLength = 0;
-	
-	fseek(encFile,0xA,SEEK_SET);
-	fread(&headerLength,4,1,encFile);
-	fseek(encFile,headerLength, SEEK_SET);
-}
-
 int  encode(FILE *encFile,char *message)
 {
-	int i,j;
-	char * binaryForm;
-	char const mask = 1<<7; 
-	
-	unsigned char bits[1];	
+	int j,i;
+	int * binaryForm;
+	unsigned char bits[1];
+	fpos_t pos;
+	int length;
+
 	hop_over_header(encFile);	
-	printf("message: %s \n",message);
+	length = strlen(message);
+	
+	binaryForm = convert_binary(length);
+	
+	for(j=0;j<=7;++j)
+	{	
+			fgetpos(encFile,&pos);	
+			if(fread(bits,1,8,encFile)!=8)
+			{
+				fflush(encFile);
+				printf("message is too long cannot write");
+				exit(EXIT_FAILURE);
+			}
+	
+			fsetpos(encFile,&pos);
+
+			if(binaryForm[j])
+			{
+				bits[0] |= 1 << 0;
+			}
+
+			else
+			{
+				bits[0] &= ~(1 << 0);
+			}
+
+			if((fwrite(bits,1,8,encFile))!=8)
+			{
+				printf("message is too long cannot write");
+				fflush(encFile);
+				exit(EXIT_FAILURE);
+			}
+	}
+	
+	free(binaryForm);
+	binaryForm = NULL;	
 
 	for(i=0;i<strlen(message);i++)
 	{
+				
 		binaryForm = convert_binary(message[i]);
-		
-		for(j=0;j<8;j++)
+		for(j=0;j<=7;++j)
 		{	
-			printf("mask:%d \n",mask);
-			fread(bits,1,8,encFile);
-			printf("%d",bits[0]);
-			if((int)binaryForm[j])
-				bits[0] =bits[0] | mask;
-			else
-				bits[0] = bits[0] & ~mask;
+			fgetpos(encFile,&pos);	
+			if(fread(bits,1,8,encFile)!=8)
+			{
+				fflush(encFile);
+				printf("message is too long cannot write");
+				exit(EXIT_FAILURE);
+			}
+	
+			fsetpos(encFile,&pos);
 
-			printf("%d",bits[0]);
-			fwrite(bits,1,8,encFile);
+			if(binaryForm[j])
+			{
+				bits[0] |= 1 << 0;
+			}
+
+			else
+			{
+				bits[0] &= ~(1 << 0);
+			}
+
+			if((fwrite(bits,1,8,encFile))!=8)
+			{
+				printf("message is too long cannot write");
+				fflush(encFile);
+				exit(EXIT_FAILURE);
+			}
 		}
-		free(binaryForm);
-		
+			free(binaryForm);
+			binaryForm = NULL;	
 	}
+
+	free(message);
+	message=NULL;		
+	fclose(encFile);
+	encFile = NULL;
 	return 1;
 }
 
-char *convert_binary(char j)
+int *convert_binary(char j)
 {
-	char *bin;
+	int *bin;
 	int n = (int)j;
 	int i=0;
-	printf("\nn is %d\n",n);
 
-	if((bin=(char*)malloc(8*sizeof(char)))==NULL)
+	if((bin=(int*)malloc(8*sizeof(int)))==NULL)
 	{
 		exit(EXIT_FAILURE);
 	}
@@ -57,11 +104,13 @@ char *convert_binary(char j)
    for( i = 7; i >= 0; i--)        
    {
         if( (1 << i) & n)
-           bin[7 - i] = '1';
+           bin[7 - i] = 1;
         else
-           bin[7 - i] = '0';                   
+           bin[7 - i] = 0;
    }
+
 	return bin;
 
 }
+
 

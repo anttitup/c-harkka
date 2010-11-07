@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
-	if((fileHandler=fopen(argv[1],"r"))!=NULL)
+	if((fileHandler=fopen(argv[1],"r+"))!=NULL)
 	{	
 		secretMessage = collect_message(argc,argv);
 		read_file(fileHandler, secretMessage);
@@ -44,7 +44,6 @@ int main(int argc, char **argv)
 
 int read_file(FILE *input, char * secretMessage)
 {
-	char *message;
 	
 	if(strcmp(encodeOrDecode,"encode")==0)
 	{
@@ -59,10 +58,9 @@ int read_file(FILE *input, char * secretMessage)
 	else
 	{	
 		printf("message was\n");
-		printf("%s\n",decode(input));	
+		decode(input);	
 	}
 
-	fclose(input);
 
 	return 1;
 }
@@ -108,18 +106,44 @@ char * collect_message(int numberOfArguments,char *message[])
 {
 	int lengthOfMessage= numberOfArguments;
 	int i;
+	int length=0;
 	char * secretMessage;
-	if((secretMessage= malloc(sizeof(message)))==NULL)
+	char * vali= " ";
+	
+	for(i=3;i<lengthOfMessage;++i)
 	{
-		printf("cannot locate memero");
+		length+=strlen(message[i]);
+	}
+	
+	length+=i;
+
+	if((secretMessage= malloc(length  * sizeof(char)))==NULL)
+	{
+		printf("cannot locate memory");
 		exit(EXIT_FAILURE);
 	}
+	
 	
 	for(i=3;i<lengthOfMessage;++i)
 	{
 		strcat(secretMessage,message[i]);
-		strcat(secretMessage," ");
+		strcat(secretMessage,vali);
 	}
-	
+
+	if(length>=255)
+	{
+		printf("message is bigger than 100 charechters exiting...");
+		exit(EXIT_FAILURE);
+	}
+
 	return secretMessage;
+}
+
+void hop_over_header(FILE *encFile)
+{
+	int headerLength = 0;
+	
+	fseek(encFile,0xA,SEEK_SET);
+	fread(&headerLength,4,1,encFile);
+	fseek(encFile,headerLength, SEEK_SET);
 }

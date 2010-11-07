@@ -1,45 +1,48 @@
 #include "decode.h"
 
-char * decode(FILE *decFile)
+int decode(FILE *decFile)
 {
-	unsigned char n=0;
 	unsigned char bits[1];
-	char mark = 1;
-	char *message;
-	int i=0;
-
-	if((message = (char *) malloc(100*sizeof(char)))==NULL)
-	{
-		exit(EXIT_FAILURE);
-	}
-
+	unsigned char mark = '\0';
+	int i=1;
+	int firstTime=1;
+	unsigned int length=0,counter=0;
 	hop_over_header(decFile);	
 	
-	printf("ei ainakaan täällä");
+	printf("ei ainakaan täällä\n");
+
 	while(fread(bits,1,8,decFile)==8)
 	{
-		mark=0;
-		printf("bits: %d",bits[0]);
-		
-		for (n= 0; n< 8; n++)
-      		mark |= (bits[n] & 1) << n;
+		if((bits[0] & (1 << 0)))
+		{		
+			mark |= 1 << (8-i);
+		}
+		else{
+			mark &= ~(1<< (8-i));
+		}
 
-		printf("mark:%d",mark);	
-		if(mark=='\0')
-			break;
-		if(i>9)
-			break;
+		if(i==8){
+			i=0;
+			if(firstTime)
+			{
+				firstTime=0;
+				length=mark;	
+			}
+			else
+			{
+				printf("%c",mark);
+				counter++;
+			}
+			
+			if(length==counter)
+				break;
+			
+			mark='\0';
+		}		
 		i++;
-		printf("mark:%c",mark);
 	}
-	return message;
+	fclose(decFile);
+	decFile=NULL;
+	return 1;
 }
-char binary_to_dec(char binaryForm[])
-{
-	char mark;
-	int n;
-	for (n= 0; n< 8; n++)
-      mark |= (binaryForm[n] & 1) << n;
-	printf("message... %c",mark);
-	return mark;	
-}
+
